@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Table — Dashboard</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#111110;--cyan:#00C2CB;--cyan-light:#E6FAFB;--cyan-mid:#00A0A8;
+  --off-white:#F4F3F0;--surface:#FFFFFF;--surface-2:#F2F1EE;
+  --border:#E4E2DC;--border-strong:#C8C6BE;
+  --text-primary:#111110;--text-secondary:#6B6A65;--text-muted:#A8A7A2;
+  --green:#1D9E75;--green-bg:#EAF6F1;--green-text:#0F6E56;
+  --amber:#BA7517;--amber-bg:#FDF3E3;--amber-text:#854F0B;
+  --blue:#185FA5;--blue-bg:#EBF3FC;--blue-text:#0C447C;
+  --red:#A32D2D;--red-bg:#FCEAEA;--red-text:#791F1F;
+  --purple:#534AB7;--purple-bg:#EEEDFE;--purple-text:#3C3489;
+}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--off-white);color:var(--text-primary);font-size:14px;line-height:1.5;min-height:100vh}
+
+/* HEADER */
+.header{background:var(--black);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;gap:1.5rem}
+.header-left{display:flex;align-items:center;gap:1rem;flex-shrink:0}
+.logo-badge{background:var(--cyan);border-radius:7px;padding:.35rem .65rem;font-weight:700;font-size:13px;color:var(--black);letter-spacing:-.3px;line-height:1}
+.header-title{color:white;font-weight:600;font-size:16px;letter-spacing:-.2px}
+.header-divider{color:#444;margin:0 .5rem}
+.header-sub{color:#888;font-size:13px}
+.header-date{color:#666;font-size:12px;flex-shrink:0}
+
+/* COMMITMENT RATE STRIP IN HEADER */
+.rate-strip{display:flex;align-items:center;gap:1.5rem;flex:1;justify-content:center}
+.rate-item{text-align:center}
+.rate-label{font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#666;margin-bottom:2px}
+.rate-value{font-size:20px;font-weight:700;line-height:1}
+.rate-good{color:var(--cyan)}
+.rate-warn{color:var(--amber)}
+.rate-muted{color:#555}
+.rate-divider{width:1px;height:32px;background:#333}
+
+/* HERO */
+.hero{background:var(--black);border-bottom:3px solid var(--cyan);padding:1.5rem 2.5rem;text-align:center}
+.hero-title{font-size:32px;font-weight:700;color:white;letter-spacing:-1px;line-height:1}
+
+/* MAIN */
+.main{max-width:1200px;margin:0 auto;padding:1.5rem;display:flex;flex-direction:column;gap:1.25rem}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.card-header{padding:.9rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;transition:background .1s}
+.card-header:hover{background:var(--surface-2)}
+.card-section-label{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted)}
+.collapse-arrow{font-size:13px;color:var(--text-muted);transition:transform .2s}
+.collapsed .collapse-arrow{transform:rotate(-90deg)}
+.card-body{padding:1.25rem 1.5rem}
+.card-body.hidden{display:none}
+
+/* UPDATES */
+.section-title-row{text-align:center;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid var(--border)}
+.section-heading{font-size:18px;font-weight:600;color:var(--text-primary);letter-spacing:-.3px}
+.section-sub{font-size:12px;color:var(--text-muted);margin-top:3px}
+.update-list{display:flex;flex-direction:column;gap:.6rem}
+.update-item{padding:1rem 1.25rem;background:var(--surface-2);border-radius:8px;border-left:3px solid var(--border-strong)}
+.update-item.info{border-left-color:var(--blue)}
+.update-item.win{border-left-color:var(--green)}
+.update-item.urgent{border-left-color:var(--amber)}
+.update-type{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:.35rem}
+.update-item.info .update-type{color:var(--blue-text)}
+.update-item.win .update-type{color:var(--green-text)}
+.update-item.urgent .update-type{color:var(--amber-text)}
+.update-title{font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:.35rem;letter-spacing:-.2px}
+.update-text{font-size:13px;color:var(--text-secondary);line-height:1.55;max-width:55%}
+
+/* METRICS */
+.metrics-outer{display:grid;grid-template-columns:repeat(3,1fr) 2fr;gap:.75rem}
+.metric-tile{padding:1.1rem 1rem;background:var(--surface-2);border-radius:9px;text-align:center}
+.metric-number{font-size:30px;font-weight:700;color:var(--text-primary);line-height:1;margin-bottom:.3rem}
+.metric-label{font-size:11px;color:var(--text-secondary);line-height:1.3}
+.metric-delta{display:inline-flex;align-items:center;gap:2px;font-size:10px;font-weight:600;margin-top:.45rem;padding:2px 7px;border-radius:20px}
+.delta-up{background:var(--green-bg);color:var(--green-text)}
+.delta-down{background:var(--red-bg);color:var(--red-text)}
+.delta-flat{background:var(--surface-2);color:var(--text-muted);border:1px solid var(--border)}
+.metric-tile-split{background:var(--surface-2);border-radius:9px;display:grid;grid-template-columns:1fr 1fr;overflow:hidden;gap:1px}
+.metric-half{padding:1.1rem 1rem;text-align:center;background:var(--surface-2)}
+
+/* COMMITMENTS */
+.commit-tabs{display:grid;grid-template-columns:repeat(6,1fr);border-bottom:1px solid var(--border)}
+.c-tab{padding:.9rem .5rem;text-align:center;font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--text-secondary);font-family:inherit;border-bottom:3px solid transparent;margin-bottom:-1px;transition:all .12s}
+.c-tab:hover{background:var(--surface-2)}
+.c-tab.active{color:var(--text-primary);font-weight:600;border-bottom-color:var(--cyan)}
+.person-panel{display:none}
+.person-panel.active{display:block}
+.person-header{padding:1rem 1.5rem .75rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.75rem}
+.person-avatar{width:36px;height:36px;border-radius:50%;background:var(--cyan-light);border:2px solid var(--cyan);color:var(--cyan-mid);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.person-name-big{font-size:15px;font-weight:600;color:var(--text-primary)}
+.person-stats{font-size:12px;color:var(--text-muted)}
+.commit-body{padding:1rem 1.5rem;background:var(--cyan-light)}
+.commit-list{display:flex;flex-direction:column;gap:.5rem}
+.commit-row{display:flex;gap:.75rem;align-items:flex-start;padding:.8rem 1rem;border-radius:8px;background:var(--surface);border:1px solid var(--border)}
+.status-pill{display:inline-flex;align-items:center;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:2px 8px;border-radius:20px;white-space:nowrap;flex-shrink:0;margin-top:1px}
+.pill-table{background:var(--blue-bg);color:var(--blue-text)}
+.pill-weekly{background:var(--amber-bg);color:var(--amber-text)}
+.pill-target{background:var(--purple-bg);color:var(--purple-text)}
+.commit-info{flex:1}
+.commit-text{font-size:13px;color:var(--text-primary);line-height:1.4}
+.commit-meta{font-size:11px;color:var(--text-muted);margin-top:3px}
+.empty-state{font-size:13px;color:var(--text-muted);font-style:italic;padding:.5rem 0}
+
+/* TARGET COMMITMENTS */
+.target-list{display:flex;flex-direction:column;gap:.6rem}
+.target-row{display:flex;gap:1rem;align-items:flex-start;padding:.9rem 1rem;border-radius:9px;border:1px solid var(--border);background:var(--surface)}
+.target-owner{width:36px;height:36px;border-radius:50%;background:var(--black);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.target-info{flex:1}
+.target-item{font-size:13px;font-weight:500;color:var(--text-primary);line-height:1.4}
+.target-meta{font-size:11px;color:var(--text-muted);margin-top:3px;display:flex;gap:.75rem;flex-wrap:wrap;align-items:center}
+.target-status{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:2px 8px;border-radius:20px}
+.status-on-track{background:var(--green-bg);color:var(--green-text)}
+.status-at-risk{background:var(--red-bg);color:var(--red-text)}
+.target-reason{font-size:11px;color:var(--red-text);margin-top:3px;font-style:italic}
+
+/* COMMITMENTS KEPT */
+.avg-list{display:flex;flex-direction:column;gap:.5rem}
+.avg-row{display:flex;align-items:center;gap:1rem;padding:.9rem 1.1rem;background:var(--surface-2);border-radius:9px}
+.avg-avatar{width:36px;height:36px;border-radius:50%;background:var(--black);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.avg-name-wrap{width:60px;flex-shrink:0}
+.avg-name-text{font-size:13px;font-weight:600;color:var(--text-primary)}
+.avg-tasks-sub{font-size:11px;color:var(--text-muted)}
+.avg-bar-wrap{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.avg-bar-fill{height:100%;border-radius:4px}
+.avg-pct{font-size:16px;font-weight:700;width:46px;text-align:right;flex-shrink:0}
+
+/* HISTORY */
+.history-tabs{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--border)}
+.h-tab{padding:.75rem .5rem;text-align:center;font-size:12px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--text-secondary);font-family:inherit;border-bottom:3px solid transparent;margin-bottom:-1px;transition:all .12s}
+.h-tab:hover{background:var(--surface-2)}
+.h-tab.active{color:var(--text-primary);font-weight:600;border-bottom-color:var(--black)}
+.history-panel{display:none;padding:1.25rem 1.5rem}
+.history-panel.active{display:block}
+.history-summary{display:flex;align-items:center;gap:1.5rem;padding:1rem 1.25rem;background:var(--surface-2);border-radius:8px;margin-bottom:1rem;flex-wrap:wrap}
+.hist-stat{text-align:center}
+.hist-number{font-size:22px;font-weight:700;color:var(--text-primary)}
+.hist-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em}
+.history-table{width:100%;border-collapse:collapse;font-size:12px}
+.history-table th{text-align:left;padding:.5rem .75rem;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);border-bottom:1px solid var(--border)}
+.history-table td{padding:.55rem .75rem;border-bottom:1px solid var(--border);color:var(--text-primary);vertical-align:middle}
+.history-table tr:last-child td{border-bottom:none}
+.history-table tr:hover td{background:var(--surface-2)}
+.hist-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px}
+.hist-met{background:var(--green-bg);color:var(--green-text)}
+.hist-missed{background:var(--red-bg);color:var(--red-text)}
+.hist-open{background:var(--amber-bg);color:var(--amber-text)}
+.hist-table-c{background:var(--blue-bg);color:var(--blue-text)}
+.hist-weekly-c{background:var(--amber-bg);color:var(--amber-text)}
+.hist-target-c{background:var(--purple-bg);color:var(--purple-text)}
+
+/* ALL TAB RATE CARDS */
+.rate-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.25rem}
+.rate-card{background:var(--surface-2);border-radius:10px;padding:1.25rem;text-align:center}
+.rate-card-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--text-muted);margin-bottom:.5rem}
+.rate-card-pct{font-size:36px;font-weight:700;line-height:1;margin-bottom:.25rem}
+.rate-card-sub{font-size:11px;color:var(--text-muted)}
+.rc-good{color:var(--green)}
+.rc-warn{color:var(--amber)}
+.rc-muted{color:var(--text-muted)}
+
+.refresh-btn{font-size:11px;color:var(--text-muted);background:none;border:1px solid var(--border);border-radius:5px;padding:.3rem .75rem;cursor:pointer;font-family:inherit}
+.refresh-btn:hover{background:var(--surface-2)}
+.loading-text{font-size:12px;color:var(--text-muted);font-style:italic;padding:.5rem 0}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo-badge">J&R</div>
+    <span class="header-title">The Table</span>
+    <span class="header-divider">·</span>
+    <span class="header-sub">Weekly Working Session</span>
+  </div>
+  <div class="rate-strip" id="header-rates">
+    <div class="rate-item">
+      <div class="rate-label">Last Week</div>
+      <div class="rate-value rate-muted" id="hrate-week">--</div>
+    </div>
+    <div class="rate-divider"></div>
+    <div class="rate-item">
+      <div class="rate-label">Last 4 Weeks</div>
+      <div class="rate-value rate-muted" id="hrate-4wk">--</div>
+    </div>
+    <div class="rate-divider"></div>
+    <div class="rate-item">
+      <div class="rate-label">All Time</div>
+      <div class="rate-value rate-muted" id="hrate-all">--</div>
+    </div>
+  </div>
+  <div class="header-date" id="live-date"></div>
+</div>
+
+<div class="hero">
+  <div class="hero-title">The Table</div>
+</div>
+
+<div class="main">
+
+  <!-- COMPANY UPDATES -->
+  <div class="card" id="card-updates">
+    <div class="card-header" onclick="toggleCard('updates')">
+      <span class="card-section-label">Company Updates</span>
+      <span class="collapse-arrow">▾</span>
+    </div>
+    <div class="card-body" id="body-updates">
+      <div class="section-title-row">
+        <div class="section-heading">Latest Updates</div>
+        <div class="section-sub">Reviewed at the start of every Table meeting</div>
+      </div>
+      <div class="update-list" id="updates-list">
+        <div class="loading-text">Loading updates...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEPARTMENT OVERVIEW -->
+  <div class="card" id="card-metrics">
+    <div class="card-header" onclick="toggleCard('metrics')">
+      <span class="card-section-label">Department Overview</span>
+      <div style="display:flex;align-items:center;gap:.75rem">
+        <button class="refresh-btn" onclick="event.stopPropagation();loadAll()">Refresh</button>
+        <span class="collapse-arrow">▾</span>
+      </div>
+    </div>
+    <div class="card-body" id="body-metrics">
+      <div class="metrics-outer" id="metrics-grid">
+        <div class="loading-text">Loading metrics...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMMITMENTS THIS WEEK -->
+  <div class="card" id="card-commits">
+    <div class="card-header" onclick="toggleCard('commits')">
+      <span class="card-section-label">Commitments — This Week</span>
+      <span class="collapse-arrow">▾</span>
+    </div>
+    <div class="card-body" id="body-commits" style="padding:0">
+      <div class="commit-tabs">
+        <button class="c-tab active" onclick="showCommit('joe',this)">Joe</button>
+        <button class="c-tab" onclick="showCommit('jay',this)">Jay</button>
+        <button class="c-tab" onclick="showCommit('mary',this)">Mary</button>
+        <button class="c-tab" onclick="showCommit('mike',this)">Mike</button>
+        <button class="c-tab" onclick="showCommit('ilan',this)">Ilan</button>
+        <button class="c-tab" onclick="showCommit('emily',this)">Emily</button>
+      </div>
+      <div id="commit-panels"></div>
+    </div>
+  </div>
+
+  <!-- TARGET COMMITMENTS -->
+  <div class="card" id="card-targets">
+    <div class="card-header" onclick="toggleCard('targets')">
+      <span class="card-section-label">Target Commitments</span>
+      <span class="collapse-arrow">▾</span>
+    </div>
+    <div class="card-body" id="body-targets">
+      <div class="target-list" id="target-list">
+        <div class="loading-text">Loading targets...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMMITMENTS KEPT -->
+  <div class="card" id="card-avg">
+    <div class="card-header" onclick="toggleCard('avg')">
+      <span class="card-section-label">Commitments Kept — By Person</span>
+      <span class="collapse-arrow">▾</span>
+    </div>
+    <div class="card-body" id="body-avg">
+      <div class="avg-list" id="avg-list">
+        <div class="loading-text">Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMMITMENT HISTORY -->
+  <div class="card" id="card-history">
+    <div class="card-header" onclick="toggleCard('history')">
+      <span class="card-section-label">Commitment History</span>
+      <span class="collapse-arrow">▾</span>
+    </div>
+    <div class="card-body" id="body-history" style="padding:0">
+      <div class="history-tabs">
+        <button class="h-tab active" onclick="showHistory('hall',this)">All</button>
+        <button class="h-tab" onclick="showHistory('hjoe',this)">Joe</button>
+        <button class="h-tab" onclick="showHistory('hjay',this)">Jay</button>
+        <button class="h-tab" onclick="showHistory('hmary',this)">Mary</button>
+        <button class="h-tab" onclick="showHistory('hmike',this)">Mike</button>
+        <button class="h-tab" onclick="showHistory('hilan',this)">Ilan</button>
+        <button class="h-tab" onclick="showHistory('hemily',this)">Emily</button>
+      </div>
+      <div id="history-panels"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const PUBLISHED_ID = '2PACX-1vSyNXpq-xDI1PvfodKpMoiNweypQiyXbP_RoU3VW-85SOqqnpmjBBkk1K9d_wODyIxcf1o9-XBV6YDh';
+const GID_FORM = 1044850021;
+const GID_UPDATES = 180348687;
+const GID_METRICS = 1371240874;
+// You will need to add the GID for Target Commitments tab once CoWork creates it
+// For now using a placeholder - update this once tab is created
+const GID_TARGETS = 1663103869;
+
+const PEOPLE = [
+  {key:'joe', label:'Joe', initials:'JR'},
+  {key:'jay', label:'Jay', initials:'JT'},
+  {key:'mary', label:'Mary', initials:'MA'},
+  {key:'mike', label:'Mike', initials:'MR'},
+  {key:'ilan', label:'Ilan', initials:'IL'},
+  {key:'emily', label:'Emily', initials:'EM'}
+];
+
+function csvUrl(gid) {
+  return `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_ID}/pub?gid=${gid}&single=true&output=csv`;
+}
+
+async function fetchCSV(gid) {
+  const res = await fetch(csvUrl(gid));
+  const text = await res.text();
+  return parseCSV(text);
+}
+
+function parseCSV(text) {
+  const rows = [];
+  const lines = text.split('\n');
+  for (let line of lines) {
+    const row = [];
+    let inQ = false, cell = '';
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') { inQ = !inQ; }
+      else if (ch === ',' && !inQ) { row.push(cell.trim()); cell = ''; }
+      else { cell += ch; }
+    }
+    row.push(cell.trim());
+    if (row.some(c => c)) rows.push(row);
+  }
+  return rows;
+}
+
+function typeLabel(raw) {
+  if (!raw) return '';
+  if (raw.toLowerCase().includes('table')) return 'Table';
+  if (raw.toLowerCase().includes('weekly')) return 'Weekly';
+  if (raw.toLowerCase().includes('target')) return 'Target';
+  return raw;
+}
+
+function typePill(type) {
+  const t = typeLabel(type);
+  if (t === 'Table') return '<span class="status-pill pill-table">Table</span>';
+  if (t === 'Weekly') return '<span class="status-pill pill-weekly">Weekly</span>';
+  if (t === 'Target') return '<span class="status-pill pill-target">Target</span>';
+  return '';
+}
+
+function initials(name) {
+  const p = PEOPLE.find(x => x.label.toLowerCase() === name.toLowerCase());
+  return p ? p.initials : name.substring(0,2).toUpperCase();
+}
+
+// New sheet layout: each commitment slot has 4 columns: Type, Description, Blocker, Status
+// Slots 0-4 (5 slots), starting at col index 3
+// Col 3: C1 Type, 4: C1 Desc, 5: C1 Blocker, 6: C1 Status
+// Col 7: C2 Type, 8: C2 Desc, 9: C2 Blocker, 10: C2 Status ... etc
+// Col 23: Anything else (notes)
+function getCommitments(row) {
+  const commits = [];
+  for (let c = 0; c < 5; c++) {
+    const base = 3 + (c * 4);
+    const type = row[base] || '';
+    const desc = row[base+1] || '';
+    const blocker = row[base+2] || '';
+    const status = row[base+3] || 'Open';
+    if (!desc) continue;
+    commits.push({type, desc, blocker, status});
+  }
+  return commits;
+}
+
+function getWeekDate(row) {
+  return row[2] || row[0] || '';
+}
+
+function parseDate(str) {
+  if (!str) return null;
+  const d = new Date(str);
+  return isNaN(d) ? null : d;
+}
+
+function getWeekKey(dateStr) {
+  const d = parseDate(dateStr);
+  if (!d) return dateStr;
+  // Round to Thursday of that week
+  const day = d.getDay();
+  const diff = (4 - day + 7) % 7;
+  const thu = new Date(d);
+  thu.setDate(d.getDate() + diff);
+  return thu.toISOString().split('T')[0];
+}
+
+function computeRates(rows) {
+  // rows[0] = header, rest = data
+  const now = new Date();
+  const oneWeekAgo = new Date(now); oneWeekAgo.setDate(now.getDate() - 7);
+  const fourWeeksAgo = new Date(now); fourWeeksAgo.setDate(now.getDate() - 28);
+
+  let allMet=0, allTotal=0;
+  let wkMet=0, wkTotal=0;
+  let f4Met=0, f4Total=0;
+
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    if (!row[1]) continue;
+    const d = parseDate(row[2] || row[0]);
+    const commits = getCommitments(row);
+    for (const c of commits) {
+      if (!c.desc) continue;
+      const isMet = c.status.toLowerCase() === 'met';
+      const isOpen = c.status.toLowerCase() === 'open';
+      if (isOpen) continue; // only count decided ones
+      allTotal++;
+      if (isMet) allMet++;
+      if (d && d >= oneWeekAgo) { wkTotal++; if (isMet) wkMet++; }
+      if (d && d >= fourWeeksAgo) { f4Total++; if (isMet) f4Met++; }
+    }
+  }
+
+  function pct(met, total) {
+    if (total === 0) return null;
+    return Math.round((met/total)*100);
+  }
+
+  return {
+    week: pct(wkMet, wkTotal),
+    four: pct(f4Met, f4Total),
+    all: pct(allMet, allTotal),
+    weekMet: wkMet, weekTotal: wkTotal,
+    fourMet: f4Met, fourTotal: f4Total,
+    allMet, allTotal
+  };
+}
+
+function rateColor(pct) {
+  if (pct === null) return 'rc-muted';
+  if (pct >= 80) return 'rc-good';
+  return 'rc-warn';
+}
+
+function headerRateColor(pct) {
+  if (pct === null) return 'rate-muted';
+  if (pct >= 80) return 'rate-good';
+  return 'rate-warn';
+}
+
+function renderHeaderRates(rates) {
+  function fmt(v) { return v === null ? '--' : v + '%'; }
+  document.getElementById('hrate-week').textContent = fmt(rates.week);
+  document.getElementById('hrate-week').className = 'rate-value ' + headerRateColor(rates.week);
+  document.getElementById('hrate-4wk').textContent = fmt(rates.four);
+  document.getElementById('hrate-4wk').className = 'rate-value ' + headerRateColor(rates.four);
+  document.getElementById('hrate-all').textContent = fmt(rates.all);
+  document.getElementById('hrate-all').className = 'rate-value ' + headerRateColor(rates.all);
+}
+
+function getLatestPerPerson(rows) {
+  const map = {};
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    if (!row[1]) continue;
+    map[row[1].trim().toLowerCase()] = row;
+  }
+  return map;
+}
+
+function renderCommitPanel(person, row) {
+  const isActive = person.key === 'joe' ? 'active' : '';
+  let commitHTML = '';
+  if (!row) {
+    commitHTML = `<div class="commit-row"><div class="commit-info"><div class="empty-state">No commitments submitted yet.</div></div></div>`;
+  } else {
+    const commits = getCommitments(row);
+    if (!commits.length) {
+      commitHTML = `<div class="commit-row"><div class="commit-info"><div class="empty-state">No commitments submitted yet.</div></div></div>`;
+    } else {
+      for (const c of commits) {
+        commitHTML += `
+          <div class="commit-row">
+            ${typePill(c.type)}
+            <div class="commit-info">
+              <div class="commit-text">${c.desc}</div>
+              ${c.blocker ? `<div class="commit-meta">Blocker: ${c.blocker}</div>` : ''}
+            </div>
+          </div>`;
+      }
+    }
+  }
+  return `
+    <div class="person-panel ${isActive}" id="cpanel-${person.key}">
+      <div class="person-header">
+        <div class="person-avatar">${person.initials}</div>
+        <div>
+          <div class="person-name-big">${person.label}</div>
+          <div class="person-stats">${row ? 'Submitted for this week' : 'Not yet submitted'}</div>
+        </div>
+      </div>
+      <div class="commit-body"><div class="commit-list">${commitHTML}</div></div>
+    </div>`;
+}
+
+function renderAvgRow(person, rows) {
+  let met = 0, total = 0;
+  const personRows = rows.slice(1).filter(r => r[1] && r[1].trim().toLowerCase() === person.label.toLowerCase());
+  for (const row of personRows) {
+    for (const c of getCommitments(row)) {
+      if (c.status.toLowerCase() === 'open') continue;
+      total++;
+      if (c.status.toLowerCase() === 'met') met++;
+    }
+  }
+  const pct = total > 0 ? Math.round((met/total)*100) : null;
+  const color = pct === null ? 'var(--text-muted)' : pct >= 80 ? '#1D9E75' : '#BA7517';
+  const barW = pct !== null ? pct : 0;
+  return `
+    <div class="avg-row">
+      <div class="avg-avatar">${person.initials}</div>
+      <div class="avg-name-wrap">
+        <div class="avg-name-text">${person.label}</div>
+        <div class="avg-tasks-sub">${met} of ${total}</div>
+      </div>
+      <div class="avg-bar-wrap"><div class="avg-bar-fill" style="width:${barW}%;background:${color}"></div></div>
+      <div class="avg-pct" style="color:${color}">${pct !== null ? pct+'%' : '--'}</div>
+    </div>`;
+}
+
+function renderAllHistoryPanel(rates) {
+  function fmt(v, met, total) {
+    if (v === null) return { pct: '--', sub: 'No data yet', cls: 'rc-muted' };
+    return { pct: v+'%', sub: `${met} of ${total} kept`, cls: rateColor(v) };
+  }
+  const wk = fmt(rates.week, rates.weekMet, rates.weekTotal);
+  const f4 = fmt(rates.four, rates.fourMet, rates.fourTotal);
+  const al = fmt(rates.all, rates.allMet, rates.allTotal);
+  return `
+    <div class="history-panel active" id="hall">
+      <div class="rate-cards">
+        <div class="rate-card">
+          <div class="rate-card-label">Last Week</div>
+          <div class="rate-card-pct ${wk.cls}">${wk.pct}</div>
+          <div class="rate-card-sub">${wk.sub}</div>
+        </div>
+        <div class="rate-card">
+          <div class="rate-card-label">Last 4 Weeks</div>
+          <div class="rate-card-pct ${f4.cls}">${f4.pct}</div>
+          <div class="rate-card-sub">${f4.sub}</div>
+        </div>
+        <div class="rate-card">
+          <div class="rate-card-label">All Time</div>
+          <div class="rate-card-pct ${al.cls}">${al.pct}</div>
+          <div class="rate-card-sub">${al.sub}</div>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);text-align:center">Individual breakdowns available in each person tab. History builds as Mike marks commitments Met or Missed in the sheet.</p>
+    </div>`;
+}
+
+function renderPersonHistoryPanel(person, rows, isFirst) {
+  const personRows = rows.slice(1).filter(r => r[1] && r[1].trim().toLowerCase() === person.label.toLowerCase());
+  let met=0, missed=0, open=0, tableC=0, weeklyC=0, targetC=0;
+  let tableRows = '';
+
+  for (const row of personRows) {
+    const weekOf = getWeekDate(row);
+    for (const c of getCommitments(row)) {
+      const t = typeLabel(c.type);
+      if (t === 'Table') tableC++;
+      else if (t === 'Weekly') weeklyC++;
+      else if (t === 'Target') targetC++;
+      const s = c.status.toLowerCase();
+      if (s === 'met') met++;
+      else if (s === 'missed') missed++;
+      else open++;
+      let sBadge = `<span class="hist-badge hist-open">Open</span>`;
+      if (s === 'met') sBadge = `<span class="hist-badge hist-met">Met</span>`;
+      if (s === 'missed') sBadge = `<span class="hist-badge hist-missed">Missed</span>`;
+      let tBadge = '';
+      if (t === 'Table') tBadge = `<span class="hist-badge hist-table-c">Table</span>`;
+      else if (t === 'Weekly') tBadge = `<span class="hist-badge hist-weekly-c">Weekly</span>`;
+      else if (t === 'Target') tBadge = `<span class="hist-badge hist-target-c">Target</span>`;
+      tableRows += `<tr><td>${c.desc}</td><td>${tBadge}</td><td>${weekOf}</td><td>${sBadge}</td></tr>`;
+    }
+  }
+
+  const total = met + missed;
+  const pct = total > 0 ? Math.round((met/total)*100) : null;
+  const pctStr = pct !== null ? pct+'%' : '--';
+  const pctColor = pct !== null ? (pct >= 80 ? 'var(--green)' : 'var(--amber)') : 'var(--text-muted)';
+
+  if (!tableRows) {
+    tableRows = `<tr><td colspan="4" style="color:var(--text-muted);font-style:italic;padding:.75rem">No history yet.</td></tr>`;
+  }
+
+  return `
+    <div class="history-panel" id="h${person.key}">
+      <div class="history-summary">
+        <div class="hist-stat"><div class="hist-number" style="color:${pctColor}">${pctStr}</div><div class="hist-label">Rate</div></div>
+        <div class="hist-stat"><div class="hist-number">${met+missed+open}</div><div class="hist-label">Total</div></div>
+        <div class="hist-stat"><div class="hist-number" style="color:var(--green)">${met}</div><div class="hist-label">Met</div></div>
+        <div class="hist-stat"><div class="hist-number" style="color:var(--red)">${missed}</div><div class="hist-label">Missed</div></div>
+        <div class="hist-stat"><div class="hist-number" style="color:var(--amber)">${open}</div><div class="hist-label">Open</div></div>
+        <div class="hist-stat"><div class="hist-number" style="color:var(--blue)">${tableC}</div><div class="hist-label">Table</div></div>
+        <div class="hist-stat"><div class="hist-number" style="color:var(--amber)">${weeklyC}</div><div class="hist-label">Weekly</div></div>
+        <div class="hist-stat"><div class="hist-number" style="color:var(--purple)">${targetC}</div><div class="hist-label">Target</div></div>
+      </div>
+      <table class="history-table">
+        <thead><tr><th>Commitment</th><th>Type</th><th>Week of</th><th>Status</th></tr></thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    </div>`;
+}
+
+function renderTargets(rows) {
+  // Columns: Owner, Item, Target Date, Status, Reason if At Risk
+  let html = '';
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    if (!row[1]) continue;
+    const owner = row[0] || '';
+    const item = row[1] || '';
+    const date = row[2] || '';
+    const status = row[3] || 'On Track';
+    const reason = row[4] || '';
+    const isAtRisk = status.toLowerCase().includes('risk');
+    const statusClass = isAtRisk ? 'status-at-risk' : 'status-on-track';
+    html += `
+      <div class="target-row">
+        <div class="target-owner">${initials(owner)}</div>
+        <div class="target-info">
+          <div class="target-item">${item}</div>
+          <div class="target-meta">
+            <span>${owner}</span>
+            <span>Target: ${date}</span>
+            <span class="target-status ${statusClass}">${status}</span>
+          </div>
+          ${isAtRisk && reason ? `<div class="target-reason">${reason}</div>` : ''}
+        </div>
+      </div>`;
+  }
+  if (!html) {
+    html = `<div class="loading-text">No target commitments yet. Add them to the Target Commitments tab in the sheet.</div>`;
+  }
+  document.getElementById('target-list').innerHTML = html;
+}
+
+async function loadFormData() {
+  try {
+    const rows = await fetchCSV(GID_FORM);
+    const latest = getLatestPerPerson(rows);
+    const rates = computeRates(rows);
+
+    // Header rates
+    renderHeaderRates(rates);
+
+    // Commit panels
+    let panelHTML = '';
+    for (const p of PEOPLE) {
+      panelHTML += renderCommitPanel(p, latest[p.label.toLowerCase()]);
+    }
+    document.getElementById('commit-panels').innerHTML = panelHTML;
+
+    // Avg by person
+    let avgHTML = '';
+    for (const p of PEOPLE) {
+      avgHTML += renderAvgRow(p, rows);
+    }
+    document.getElementById('avg-list').innerHTML = avgHTML || '<div class="loading-text">No data yet.</div>';
+
+    // Blockers from notes col (col 23 with new 4-col structure per commitment)
+    const notesCol = 23;
+    let blockerHTML = '';
+    for (const p of PEOPLE) {
+      const row = latest[p.label.toLowerCase()];
+      if (row && row[notesCol] && row[notesCol].trim()) {
+        blockerHTML += `
+          <div style="display:flex;gap:.875rem;align-items:flex-start;padding:.9rem 1rem;border-radius:9px;border:1px solid var(--border);background:var(--surface);margin-bottom:.6rem">
+            <div style="width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:16px;background:var(--amber-bg);flex-shrink:0">⚠️</div>
+            <div>
+              <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:.05em">${p.label}</div>
+              <div style="font-size:13px;color:var(--text-primary);line-height:1.4">${row[notesCol]}</div>
+            </div>
+          </div>`;
+      }
+    }
+
+    // History panels
+    let histHTML = renderAllHistoryPanel(rates);
+    for (const p of PEOPLE) {
+      histHTML += renderPersonHistoryPanel(p, rows, false);
+    }
+    document.getElementById('history-panels').innerHTML = histHTML;
+
+    // If no blockers section exists yet, add it
+    const blockerEl = document.getElementById('blocker-content');
+    if (blockerEl) {
+      blockerEl.innerHTML = blockerHTML || `<div style="padding:.5rem 0;font-size:12px;color:var(--text-muted);font-style:italic">No blockers logged this week.</div>`;
+    }
+
+  } catch(e) {
+    console.error('Form data error:', e);
+    document.getElementById('commit-panels').innerHTML = '<div style="padding:1rem;color:var(--text-muted)">Could not load commitments.</div>';
+  }
+}
+
+async function loadUpdates() {
+  try {
+    const rows = await fetchCSV(GID_UPDATES);
+    let html = '';
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i];
+      if (!row[1]) continue;
+      const type = (row[0] || '').toLowerCase();
+      let cls = 'neutral';
+      if (type.includes('win') || type.includes('launch')) cls = 'win';
+      else if (type.includes('urgent') || type.includes('schedule')) cls = 'urgent';
+      else if (type.includes('info') || type.includes('sales') || type.includes('process') || type.includes('heads')) cls = 'info';
+      html += `
+        <div class="update-item ${cls}">
+          <div class="update-type">${row[0] || 'Update'}</div>
+          <div class="update-title">${row[1]}</div>
+          <div class="update-text">${row[2] || ''}</div>
+        </div>`;
+    }
+    document.getElementById('updates-list').innerHTML = html || '<div class="loading-text">No updates this week.</div>';
+  } catch(e) {
+    document.getElementById('updates-list').innerHTML = '<div class="loading-text">No updates this week.</div>';
+  }
+}
+
+async function loadMetrics() {
+  try {
+    const rows = await fetchCSV(GID_METRICS);
+    const metrics = rows.slice(1).filter(r => r[0]);
+    if (!metrics.length) {
+      document.getElementById('metrics-grid').innerHTML = '<div class="loading-text">No metrics yet.</div>';
+      return;
+    }
+    function deltaClass(val) {
+      if (!val) return 'delta-flat';
+      if (val.includes('+') || val.startsWith('▲') || val.toLowerCase().includes('up')) return 'delta-up';
+      if (val.includes('-') || val.startsWith('▼') || val.toLowerCase().includes('down')) return 'delta-down';
+      return 'delta-flat';
+    }
+    let html = '';
+    const single = metrics.slice(0, 3);
+    const split = metrics.slice(3, 5);
+    for (const m of single) {
+      html += `<div class="metric-tile"><div class="metric-number">${m[1]||'--'}</div><div class="metric-label">${m[0]}</div><div class="metric-delta ${deltaClass(m[2])}">${m[2]||'--'}</div></div>`;
+    }
+    if (split.length) {
+      html += `<div class="metric-tile-split">`;
+      for (let i = 0; i < 2; i++) {
+        const m = split[i] || ['--','--','--'];
+        const border = i === 1 ? 'border-left:1px solid var(--border);' : '';
+        html += `<div class="metric-half" style="${border}"><div class="metric-number" style="font-size:24px">${m[1]||'--'}</div><div class="metric-label">${m[0]||'--'}</div><div class="metric-delta ${deltaClass(m[2])}">${m[2]||'--'}</div></div>`;
+      }
+      html += `</div>`;
+    }
+    document.getElementById('metrics-grid').innerHTML = html;
+  } catch(e) {
+    document.getElementById('metrics-grid').innerHTML = '<div class="loading-text">Could not load metrics.</div>';
+  }
+}
+
+async function loadTargets() {
+  try {
+    const rows = await fetchCSV(GID_TARGETS);
+    renderTargets(rows);
+  } catch(e) {
+    document.getElementById('target-list').innerHTML = '<div class="loading-text">Add target commitments to the Target Commitments tab in the sheet.</div>';
+  }
+}
+
+async function loadAll() {
+  await Promise.all([loadFormData(), loadUpdates(), loadMetrics(), loadTargets()]);
+}
+
+function toggleCard(id) {
+  const card = document.getElementById('card-'+id);
+  const body = document.getElementById('body-'+id);
+  card.classList.toggle('collapsed');
+  body.classList.toggle('hidden');
+}
+
+function showCommit(name, el) {
+  document.querySelectorAll('.person-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.c-tab').forEach(t => t.classList.remove('active'));
+  const panel = document.getElementById('cpanel-'+name);
+  if (panel) panel.classList.add('active');
+  el.classList.add('active');
+}
+
+function showHistory(id, el) {
+  document.querySelectorAll('.history-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.h-tab').forEach(t => t.classList.remove('active'));
+  const panel = document.getElementById(id);
+  if (panel) panel.classList.add('active');
+  el.classList.add('active');
+}
+
+document.getElementById('live-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+loadAll();
+</script>
+</body>
+</html>
